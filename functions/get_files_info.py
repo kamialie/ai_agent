@@ -1,19 +1,19 @@
 import os
 
+from functions.helpers import get_target_path
+
 # directory parameter is a relative path, but need to make sure it doesn't go
 # outside of working directory.
 def get_files_info(working_directory: str, directory: str = ".") -> str:
-    abs_workdir = os.path.abspath(working_directory)
-    target_dir = os.path.normpath(os.path.join(abs_workdir, directory))
-
-    if not os.path.isdir(target_dir):
-        return f'Error: "{directory}" is not a directory'
-    if not os.path.commonpath([abs_workdir, target_dir]) == abs_workdir:
+    target = get_target_path(working_directory, directory)
+    if not target:
         return f'Error: Cannot list "{directory}" as it is outside the permitted working directory'
+    if not os.path.isdir(target):
+        return f'Error: "{directory}" is not a directory'
 
     info = {}
     try:
-        with os.scandir(target_dir) as it:
+        with os.scandir(target) as it:
             for entry in it:
                 info[entry.name] = {
                     "size": entry.stat(follow_symlinks=False).st_size,
